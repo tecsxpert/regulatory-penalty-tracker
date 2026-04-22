@@ -1,7 +1,7 @@
+import PenaltyList from "./pages/PenaltyList";
+
 function App() {
-  return (
-    <h1 className="text-2xl font-bold">Penalty Tracker</h1>
-  );
+  return <PenaltyList />;
 }
 
 export default App;
