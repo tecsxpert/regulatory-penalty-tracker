@@ -8,6 +8,7 @@ function PenaltyList() {
   const [search, setSearch] = useState("");
   const [selectedPenalty, setSelectedPenalty] = useState(null);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     fetchPenalties();
@@ -21,7 +22,16 @@ function PenaltyList() {
       setError("");
     } catch (error) {
       console.error(error);
-      setError("Failed to fetch penalties");
+      setError("Backend not available. Showing sample data.");
+      setPenalties([
+        {
+          id: 1,
+          title: "Sample Penalty",
+          status: "OPEN",
+          penalty_amount: 5000,
+          due_date: "2026-05-01",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -33,9 +43,11 @@ function PenaltyList() {
 
     try {
       await api.delete(`/penalties/${id}`);
+      setSuccess("Deleted successfully");
       fetchPenalties();
     } catch (error) {
       console.error(error);
+      setError("Delete failed");
     }
   };
 
@@ -51,33 +63,50 @@ function PenaltyList() {
       const res = await api.get(`/penalties/search?q=${value}`);
       setPenalties(res.data);
     } catch (error) {
-      console.error("Search API failed:", error);
+      console.error(error);
+      setError("Search failed");
     }
   };
 
   return (
-    <div className="p-4">
+    <div>
+
+      {/* SUCCESS MESSAGE */}
+      {success && (
+        <p className="bg-green-100 text-green-700 p-2 mb-3 rounded">
+          {success}
+        </p>
+      )}
+
+      {/* ERROR MESSAGE */}
+      {error && (
+        <p className="bg-red-100 text-red-700 p-2 mb-3 rounded">
+          {error}
+        </p>
+      )}
 
       {/* FORM */}
       <PenaltyForm
         penalty={selectedPenalty}
         onSuccess={() => {
+          setSuccess("Saved successfully");
           fetchPenalties();
           setSelectedPenalty(null);
         }}
       />
 
       {/* SEARCH */}
-      <input
-        className="border p-2 mb-3 w-full max-w-md"
-        type="text"
-        placeholder="Search by title..."
-        value={search}
-        onChange={(e) => handleSearch(e.target.value)}
-      />
+      <div className="flex justify-between items-center mt-6 mb-3">
+        <h2 className="text-xl font-semibold">Penalty List</h2>
 
-      {/* ERROR MESSAGE */}
-      {error && <p className="text-red-500 mb-2">{error}</p>}
+        <input
+          className="border p-2 rounded w-64"
+          type="text"
+          placeholder="Search..."
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
+      </div>
 
       {/* TABLE */}
       {loading ? (
@@ -85,7 +114,7 @@ function PenaltyList() {
       ) : penalties.length === 0 ? (
         <p>No penalties found.</p>
       ) : (
-        <table className="w-full border mt-4">
+        <table className="w-full border bg-white shadow">
           <thead className="bg-gray-200">
             <tr>
               <th className="p-2">Title</th>
@@ -106,14 +135,14 @@ function PenaltyList() {
 
                 <td className="p-2">
                   <button
-                    className="bg-yellow-500 text-white px-2 py-1 mr-2 rounded"
+                    className="bg-yellow-500 text-white px-3 py-1 mr-2 rounded"
                     onClick={() => setSelectedPenalty(p)}
                   >
                     Edit
                   </button>
 
                   <button
-                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                     onClick={() => handleDelete(p.id)}
                   >
                     Delete

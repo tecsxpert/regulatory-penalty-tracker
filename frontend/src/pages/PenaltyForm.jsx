@@ -14,7 +14,6 @@ function PenaltyForm({ penalty, onSuccess }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // PREFILL IN EDIT MODE
   useEffect(() => {
     if (penalty) {
       setFormData({
@@ -73,18 +72,19 @@ function PenaltyForm({ penalty, onSuccess }) {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto p-6 border rounded shadow">
+    <div className="bg-white p-6 rounded shadow mb-6 max-w-lg mx-auto">
       <h2 className="text-lg font-semibold mb-3">
         {penalty ? "Edit Penalty" : "Add Penalty"}
       </h2>
 
-      {error && <p className="text-red-500 mb-2">{error}</p>}
+      {error && (
+        <p className="text-red-500 mb-2">{error}</p>
+      )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
 
         <input
           className="border p-2 rounded"
-          type="text"
           name="title"
           placeholder="Title"
           value={formData.title}
@@ -93,8 +93,8 @@ function PenaltyForm({ penalty, onSuccess }) {
 
         <input
           className="border p-2 rounded"
-          type="number"
           name="penalty_amount"
+          type="number"
           placeholder="Amount"
           value={formData.penalty_amount}
           onChange={handleChange}
@@ -102,15 +102,14 @@ function PenaltyForm({ penalty, onSuccess }) {
 
         <input
           className="border p-2 rounded"
-          type="date"
           name="due_date"
+          type="date"
           value={formData.due_date}
           onChange={handleChange}
         />
 
         <input
           className="border p-2 rounded"
-          type="text"
           name="description"
           placeholder="Description"
           value={formData.description}
@@ -119,7 +118,6 @@ function PenaltyForm({ penalty, onSuccess }) {
 
         <input
           className="border p-2 rounded"
-          type="text"
           name="regulation_body"
           placeholder="Regulation Body"
           value={formData.regulation_body}
@@ -140,11 +138,7 @@ function PenaltyForm({ penalty, onSuccess }) {
           disabled={loading}
           className="bg-blue-500 text-white p-2 rounded disabled:opacity-50"
         >
-          {loading
-            ? "Processing..."
-            : penalty
-            ? "Update"
-            : "Submit"}
+          {loading ? "Processing..." : penalty ? "Update" : "Submit"}
         </button>
 
       </form>
