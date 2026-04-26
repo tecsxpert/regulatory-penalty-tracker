@@ -1,16 +1,32 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import Login from "./pages/Login";
 import PenaltyList from "./pages/PenaltyList";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="max-w-5xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6 text-center">
-          Regulatory Penalty Tracker
-        </h1>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
 
-        <PenaltyList />
-      </div>
-    </div>
+          <Route path="/login" element={<Login />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <PenaltyList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/login" />} />
+
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

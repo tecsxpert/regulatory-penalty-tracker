@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import PenaltyForm from "./PenaltyForm";
 
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+
 function PenaltyList() {
   const [penalties, setPenalties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,6 +13,9 @@ function PenaltyList() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
     fetchPenalties();
   }, []);
@@ -17,12 +23,17 @@ function PenaltyList() {
   const fetchPenalties = async () => {
     try {
       setLoading(true);
+
+      // TODO: Integrate pagination when backend API is available
       const res = await api.get("/penalties");
+
       setPenalties(res.data);
       setError("");
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError("Backend not available. Showing sample data.");
+
+      // fallback data
       setPenalties([
         {
           id: 1,
@@ -45,8 +56,8 @@ function PenaltyList() {
       await api.delete(`/penalties/${id}`);
       setSuccess("Deleted successfully");
       fetchPenalties();
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError("Delete failed");
     }
   };
@@ -62,14 +73,33 @@ function PenaltyList() {
 
       const res = await api.get(`/penalties/search?q=${value}`);
       setPenalties(res.data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError("Search failed");
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
-    <div>
+    <div className="p-4">
+
+      {/* 🔷 HEADER */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">
+          Welcome, {user?.username}
+        </h1>
+
+        <button
+          onClick={handleLogout}
+          className="bg-gray-700 text-white px-3 py-1 rounded"
+        >
+          Logout
+        </button>
+      </div>
 
       {/* SUCCESS MESSAGE */}
       {success && (
@@ -97,12 +127,12 @@ function PenaltyList() {
 
       {/* SEARCH */}
       <div className="flex justify-between items-center mt-6 mb-3">
-        <h2 className="text-xl font-semibold">Penalty List</h2>
+        <h2 className="text-lg font-semibold">Penalty List</h2>
 
         <input
           className="border p-2 rounded w-64"
           type="text"
-          placeholder="Search..."
+          placeholder="Search penalties..."
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
         />
