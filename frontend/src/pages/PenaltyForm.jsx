@@ -72,8 +72,8 @@ function PenaltyForm({ penalty, onSuccess }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded shadow mb-6 max-w-lg mx-auto">
-      <h2 className="text-lg font-semibold mb-3">
+    <div className="bg-white p-6 rounded shadow mb-6 w-full">
+      <h2 className="text-lg font-semibold mb-4">
         {penalty ? "Edit Penalty" : "Add Penalty"}
       </h2>
 

@@ -1,30 +1,33 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import PenaltyForm from "./PenaltyForm";
 
 import { useLocation, useNavigate } from "react-router-dom";
 
-function PenaltyList() {
+function PenaltyList({ onEdit }) {
   const [penalties, setPenalties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [selectedPenalty, setSelectedPenalty] = useState(null);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  // EDIT FROM DETAIL
-  useEffect(() => {
-    if (location.state?.editPenalty) {
-      setSelectedPenalty(location.state.editPenalty);
-    }
-  }, [location.state]);
-
   useEffect(() => {
     fetchPenalties();
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchPenalties = async () => {
     try {
@@ -68,23 +71,17 @@ function PenaltyList() {
     }
   };
 
-  const handleSearch = async (value) => {
-    setSearch(value);
+  // Filter penalties
+  const filteredPenalties = penalties.filter((p) => {
+    const due = new Date(p.due_date);
 
-    try {
-      if (!value) {
-        fetchPenalties();
-        return;
-      }
-
-      const res = await api.get(`/penalties/search?q=${value}`);
-      setPenalties(res.data);
-
-    } catch (err) {
-      console.error(err);
-      setError("Search failed");
-    }
-  };
+    return (
+      (!search || p.title.toLowerCase().includes(search.toLowerCase())) &&
+      (!statusFilter || p.status === statusFilter) &&
+      (!startDate || new Date(startDate) <= due) &&
+      (!endDate || new Date(endDate) >= due)
+    );
+  });
 
   return (
     <div className="p-4">
@@ -98,79 +95,111 @@ function PenaltyList() {
 
       {/* ERROR */}
       {error && (
-        <p className="bg-red-100 text-red-700 p-2 mb-3 rounded">
+        <p className="bg-red-100 text-red-600 p-2 rounded text-sm mb-3">
           {error}
         </p>
       )}
 
-      {/* FORM */}
-      <PenaltyForm
-        penalty={selectedPenalty}
-        onSuccess={() => {
-          setSuccess("Saved successfully");
-          fetchPenalties();
-          setSelectedPenalty(null);
-          setTimeout(() => setSuccess(""), 3000);
-        }}
-      />
+      {/* FILTERS */}
+      <div className="flex flex-wrap items-center gap-3 mt-6 mb-4 bg-white p-4 rounded shadow">
 
-      {/* SEARCH */}
-      <div className="flex justify-between items-center mt-6 mb-3">
-        <h2 className="text-lg font-semibold">Penalty List</h2>
-
+        {/* SEARCH */}
         <input
           className="border p-2 rounded w-64"
           type="text"
-          placeholder="Search penalties..."
+          placeholder=" Search penalties..."
           value={search}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
+
+        {/* STATUS FILTER */}
+        <select
+          className="border p-2 rounded"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="">All Status</option>
+          <option value="OPEN">OPEN</option>
+          <option value="CLOSED">CLOSED</option>
+        </select>
+
+        {/* DATE RANGE */}
+        <div className="flex items-center gap-2">
+          <input
+            className="border p-2 rounded"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+
+          <span className="text-gray-500 text-sm">to</span>
+
+          <input
+            className="border p-2 rounded"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </div>
+
+        {/* CLEAR FILTER BUTTON */}
+        <button
+          onClick={() => {
+            setSearch("");
+            setStatusFilter("");
+            setStartDate("");
+            setEndDate("");
+            fetchPenalties();
+          }}
+          className="bg-gray-200 px-3 py-2 rounded hover:bg-gray-300"
+        >
+          Clear
+        </button>
+
       </div>
 
       {/* TABLE */}
       {loading ? (
         <p>Loading...</p>
-      ) : penalties.length === 0 ? (
+      ) : filteredPenalties.length === 0 ? (
         <p>No penalties found.</p>
       ) : (
-        <table className="w-full border bg-white shadow">
+        <table className="w-full border bg-white shadow rounded overflow-hidden">
           <thead className="bg-gray-200">
             <tr>
-              <th className="p-2">Title</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Amount</th>
-              <th className="p-2">Due Date</th>
-              <th className="p-2">Actions</th>
+              <th className="p-3 font-semibold">Title</th>
+              <th className="p-3 font-semibold">Status</th>
+              <th className="p-3 font-semibold">Amount</th>
+              <th className="p-3 font-semibold">Due Date</th>
+              <th className="p-3 font-semibold">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {penalties.map((p) => (
-              <tr key={p.id} className="border-t text-center">
+            {filteredPenalties.map((p) => (
+              <tr key={p.id} className="border-t text-center hover:bg-gray-50 transition">
 
                 <td
-                  className="p-2 cursor-pointer text-blue-600"
+                  className="p-3 cursor-pointer text-blue-600 hover:underline"
                   onClick={() => navigate(`/penalties/${p.id}`)}
                 >
                   {p.title}
                 </td>
 
-                <td className="p-2">{p.status}</td>
-                <td className="p-2">{p.penalty_amount}</td>
-                <td className="p-2">{p.due_date}</td>
+                <td className="p-3">{p.status}</td>
+                <td className="p-3">₹{p.penalty_amount}</td>
+                <td className="p-3">{p.due_date}</td>
 
-                <td className="p-2">
+                <td className="p-3">
                   <button
-                    onClick={() =>
-                      navigate("/dashboard", { state: { editPenalty: p } })
-                    }
-                    className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
+                    onClick={() => onEdit(p)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded mr-2 hover:bg-yellow-600"
                   >
                     Edit
                   </button>
 
                   <button
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                     onClick={() => handleDelete(p.id)}
                   >
                     Delete

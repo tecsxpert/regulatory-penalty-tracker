@@ -7,6 +7,7 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  ResponsiveContainer,
 } from "recharts";
 
 function Dashboard() {
@@ -49,37 +50,41 @@ function Dashboard() {
       {/* KPI CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 shadow rounded">
-          <p>Total</p>
-          <h2 className="text-xl font-bold">{stats.total}</h2>
+          <p className="text-gray-500 text-sm">Total</p>
+          <h2 className="text-2xl font-bold text-blue-600">{stats.total}</h2>
         </div>
 
         <div className="bg-white p-4 shadow rounded">
-          <p>Open</p>
-          <h2 className="text-xl font-bold text-yellow-600">{stats.open}</h2>
+          <p className="text-gray-500 text-sm">Open</p>
+          <h2 className="text-2xl font-bold text-yellow-600">{stats.open}</h2>
         </div>
 
         <div className="bg-white p-4 shadow rounded">
-          <p>Closed</p>
-          <h2 className="text-xl font-bold text-green-600">{stats.closed}</h2>
+          <p className="text-gray-500 text-sm">Closed</p>
+          <h2 className="text-2xl font-bold text-green-600">{stats.closed}</h2>
         </div>
 
         <div className="bg-white p-4 shadow rounded">
-          <p>Total Amount</p>
-          <h2 className="text-xl font-bold">₹{stats.totalAmount}</h2>
+          <p className="text-gray-500 text-sm">Total Amount</p>
+          <h2 className="text-2xl font-bold text-blue-600">₹{stats.totalAmount}</h2>
         </div>
       </div>
 
       {/* CHART */}
-      <div className="bg-white p-4 shadow rounded">
-        <h3 className="mb-3 font-semibold">Penalty Status Overview</h3>
+      <div className="bg-white p-4 rounded shadow mt-4 w-full">
+        <h2 className="font-semibold mb-2">Penalty Status Overview</h2>
 
-        <BarChart width={400} height={250} data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="value" />
-        </BarChart>
+        <div className="w-full h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
