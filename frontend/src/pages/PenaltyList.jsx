@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import PenaltyForm from "./PenaltyForm";
 
-import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function PenaltyList() {
   const [penalties, setPenalties] = useState([]);
@@ -13,8 +12,15 @@ function PenaltyList() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { user, logout } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // EDIT FROM DETAIL
+  useEffect(() => {
+    if (location.state?.editPenalty) {
+      setSelectedPenalty(location.state.editPenalty);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     fetchPenalties();
@@ -24,16 +30,14 @@ function PenaltyList() {
     try {
       setLoading(true);
 
-      // TODO: Integrate pagination when backend API is available
       const res = await api.get("/penalties");
-
       setPenalties(res.data);
       setError("");
+
     } catch (err) {
       console.error(err);
       setError("Backend not available. Showing sample data.");
 
-      // fallback data
       setPenalties([
         {
           id: 1,
@@ -49,13 +53,15 @@ function PenaltyList() {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Are you sure?");
-    if (!confirmDelete) return;
+    if (!window.confirm("Are you sure?")) return;
 
     try {
       await api.delete(`/penalties/${id}`);
       setSuccess("Deleted successfully");
       fetchPenalties();
+
+      setTimeout(() => setSuccess(""), 3000);
+
     } catch (err) {
       console.error(err);
       setError("Delete failed");
@@ -73,42 +79,24 @@ function PenaltyList() {
 
       const res = await api.get(`/penalties/search?q=${value}`);
       setPenalties(res.data);
+
     } catch (err) {
       console.error(err);
       setError("Search failed");
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   return (
     <div className="p-4">
 
-      {/* 🔷 HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">
-          Welcome, {user?.username}
-        </h1>
-
-        <button
-          onClick={handleLogout}
-          className="bg-gray-700 text-white px-3 py-1 rounded"
-        >
-          Logout
-        </button>
-      </div>
-
-      {/* SUCCESS MESSAGE */}
+      {/* SUCCESS */}
       {success && (
         <p className="bg-green-100 text-green-700 p-2 mb-3 rounded">
           {success}
         </p>
       )}
 
-      {/* ERROR MESSAGE */}
+      {/* ERROR */}
       {error && (
         <p className="bg-red-100 text-red-700 p-2 mb-3 rounded">
           {error}
@@ -122,6 +110,7 @@ function PenaltyList() {
           setSuccess("Saved successfully");
           fetchPenalties();
           setSelectedPenalty(null);
+          setTimeout(() => setSuccess(""), 3000);
         }}
       />
 
@@ -158,15 +147,24 @@ function PenaltyList() {
           <tbody>
             {penalties.map((p) => (
               <tr key={p.id} className="border-t text-center">
-                <td className="p-2">{p.title}</td>
+
+                <td
+                  className="p-2 cursor-pointer text-blue-600"
+                  onClick={() => navigate(`/penalties/${p.id}`)}
+                >
+                  {p.title}
+                </td>
+
                 <td className="p-2">{p.status}</td>
                 <td className="p-2">{p.penalty_amount}</td>
                 <td className="p-2">{p.due_date}</td>
 
                 <td className="p-2">
                   <button
-                    className="bg-yellow-500 text-white px-3 py-1 mr-2 rounded"
-                    onClick={() => setSelectedPenalty(p)}
+                    onClick={() =>
+                      navigate("/dashboard", { state: { editPenalty: p } })
+                    }
+                    className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
                   >
                     Edit
                   </button>
@@ -178,11 +176,13 @@ function PenaltyList() {
                     Delete
                   </button>
                 </td>
+
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
     </div>
   );
 }
