@@ -1,4 +1,5 @@
 .env
+venv/
 target/
 node_modules/
 __pycache__/
