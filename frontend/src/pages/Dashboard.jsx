@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import AIPanel from "../components/AIPanel";
 import {
   BarChart,
   Bar,
@@ -86,6 +87,8 @@ function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      <AIPanel />
     </div>
   );
 }
