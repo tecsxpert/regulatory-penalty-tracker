@@ -1,0 +1,28 @@
+You are a regulatory compliance expert.
+
+Explain the given regulatory penalty in simple terms for a beginner friendly, easy-to-understand language. Use short sentences and avoid complex phrases.
+
+The input may be a short phrase, sentence, or detailed legal text. Interpret it accordingly. If technical or legal terms are present, simplify them or explain them in simple words.
+
+Input:
+Penalty: {penalty_text}
+
+Output format (strictly follow this JSON structure):
+{
+  "description": "Explain what the penalty is using simple words. Do not include consequences.",
+  "impact": "Explain only the consequences of the penalty on the organization."
+}
+
+Rules:
+1. Return ONLY valid JSON. Do not include any text before or after the JSON.
+2. The output must contain exactly two keys: "description" and "impact". Do not add, remove, or rename keys.
+3. "description" must explain only what the penalty is and why it happens.
+4. "impact" must describe only the consequences of the penalty.
+5. Do not repeat the same information in both fields.
+6. Use simple, beginner-friendly language. DO NOT include section numbers or technical terms unless explained in simple words
+7. Keep responses concise and clear.
+8. If the input is unclear or empty, return:
+{
+  "description": "Insufficient information to determine the penalty.",
+  "impact": "Unknown impact due to lack of details."
+}
