@@ -79,7 +79,8 @@ def call_groq(prompt_text):
     response = requests.post(
         "https://api.groq.com/openai/v1/chat/completions",
         headers=headers,
-        json=payload
+        json=payload,
+        timeout=8
     )
 
     result = response.json()
@@ -162,10 +163,13 @@ def describe():
         update_metrics(start)
         return jsonify(parsed)
 
-    except Exception as e:
+    except Exception:
         return jsonify({
-            "error": str(e)
-        }), 500
+            "description": "AI description unavailable currently.",
+            "impact": "Unable to assess impact currently.",
+            "generated_at": datetime.utcnow().isoformat(),
+            "is_fallback": True
+        })
 
 
 # Day 4 - Recommend Route
@@ -183,6 +187,14 @@ def recommend():
     penalty = data["penalty_text"]
 
     try:
+        cache_key = generate_cache_key("recommend:", penalty)
+
+        if redis_client:
+            cached = redis_client.get(cache_key)
+            if cached:
+                update_metrics(start)
+                return jsonify(json.loads(cached))
+
         prompt_path = os.path.join(BASE_DIR, "prompts", "recommend_prompt.txt")
 
         with open(prompt_path, "r", encoding="utf-8") as file:
@@ -194,13 +206,33 @@ def recommend():
 
         recommendations = json.loads(ai_text)
 
+        if redis_client:
+            redis_client.setex(
+                cache_key,
+                900,
+                json.dumps(recommendations)
+            )
+
         update_metrics(start)
         return jsonify(recommendations)
-
     except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 500
+        return jsonify([
+            {
+                "action_type": "Review",
+                "description": "Manually review this penalty notice.",
+                "priority": "High"
+            },
+            {
+                "action_type": "Compliance",
+                "description": "Check internal compliance processes.",
+                "priority": "Medium"
+            },
+            {
+                "action_type": "Escalate",
+                "description": "Escalate to concerned team if required.",
+                "priority": "Medium"
+            }
+        ])
 
 
 # Day 6 - Generate Report Route
@@ -235,8 +267,14 @@ def generate_report():
 
     except Exception as e:
         return jsonify({
-            "error": str(e)
-        }), 500
+            "title": "Penalty Report",
+            "summary": "AI report unavailable currently.",
+            "overview": "Please review penalty manually.",
+            "key_items": [],
+            "recommendations": [],
+            "generated_at": datetime.utcnow().isoformat(),
+            "is_fallback": True
+        })
 
 
 # Run Flask App
