@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import PenaltyDetail from "./pages/PenaltyDetail";
 import PenaltyForm from "./pages/PenaltyForm";
 import { useState, useEffect } from "react";
+import Analytics from "./pages/Analytics";
 
 function DashboardLayout() {
   const { user, logout } = useAuth();
@@ -37,12 +38,20 @@ function DashboardLayout() {
           Welcome, {user?.username}
         </h1>
 
-        <button
-          onClick={handleLogout}
-          className="bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"
-        >
-          Logout
-        </button>
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={() => navigate("/analytics")}
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+          >
+            Analytics
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* DASHBOARD + FORM SIDE-BY-SIDE */}
@@ -92,6 +101,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardLayout />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
               </ProtectedRoute>
             }
           />
