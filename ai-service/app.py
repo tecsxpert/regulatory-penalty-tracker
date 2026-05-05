@@ -14,7 +14,7 @@ from chromadb.config import Settings
 # Day 11 - Load Embedding Model
 # -------------------------
 model = SentenceTransformer("all-MiniLM-L6-v2")
-print("Embedding loaded successfully:", len(model.encode("test sentence")))
+# print("Embedding loaded successfully:", len(model.encode("test sentence")))
 
 # -------------------------
 # Day 12 - ChromaDB Setup
@@ -237,7 +237,7 @@ def recommend():
         return jsonify({"error": "penalty_text is required"}), 400
 
     penalty = data["penalty_text"]
-
+    
     try:
         cache_key = generate_cache_key("recommend:", penalty)
 
@@ -312,17 +312,19 @@ def generate_report():
 # -------------------------
 # Day 12 - Search Route
 # -------------------------
-@app.route("/search", methods=["POST"])
+@app.route("/search", methods=["GET", "POST"])
 def search():
-    data = request.get_json()
-    query = data.get("query")
+    if request.method == "GET":
+        query = request.args.get("query")
+    else:
+        data = request.get_json()
+        query = data.get("query")
 
     results = search_similar(query)
 
     return jsonify({
         "results": results
     })
-
 
 # -------------------------
 # Run App
