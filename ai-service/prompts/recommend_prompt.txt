@@ -1,21 +1,36 @@
-You are a regulatory compliance expert.
+You are an expert in regulatory compliance and risk management.
 
-Based on the given penalty, provide exactly 3 recommendations.
+Your task is to analyze the given penalty and provide exactly 3 actionable recommendations.
 
-Return ONLY valid JSON array in this format:
+Focus on:
+- Practical steps the organization can take
+- Preventing future violations
+- Improving compliance processes
+
+Penalty:
+{penalty_text}
+
+STRICT OUTPUT RULES:
+- Return ONLY valid JSON
+- Do NOT include any explanation, text, or formatting outside JSON
+- Return EXACTLY 3 items
+- Each item must follow this structure:
 
 [
   {
-    "action_type": "Immediate",
-    "description": "clear action step",
-    "priority": "High"
+    "action_type": "Immediate | Corrective | Preventive",
+    "description": "Clear, specific, and actionable step",
+    "priority": "High | Medium | Low"
   }
 ]
 
-Penalty: {penalty_text}
+GUIDELINES:
+1. "Immediate" → urgent action required now  
+2. "Corrective" → fix the root cause  
+3. "Preventive" → avoid future issues  
 
-Rules:
-1. Return exactly 3 items.
-2. Use only High, Medium, or Low priority.
-3. Keep actions practical and concise.
-4. Return only JSON.
+4. Keep descriptions concise but meaningful (1 sentence)
+5. Do NOT repeat similar recommendations
+6. Ensure recommendations are realistic and relevant to the penalty
+
+Return ONLY JSON.
